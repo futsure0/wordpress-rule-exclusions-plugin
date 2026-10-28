@@ -5,3 +5,11 @@ name: Integration tests
 jobs:
   integration-tests:
     uses: coreruleset/crs-plugin-test-action/.github/workflows/integration.yaml@81cb7f29881911c56f33a82d1e25dc26e0e13636 # v3.0.2
+    with:
+      # Used by tests/regression/wordpress-rule-exclusions-plugin/9507090.yaml
+      # to set tx.wordpress-rule-exclusions-plugin_path for the test hosts only.
+      crs-config: |
+        SecRule REQUEST_HEADERS:Host "@streq subdir.example.test" "id:9507011,phase:1,pass,nolog,t:none,t:lowercase,setvar:'tx.wordpress-rule-exclusions-plugin_path=/blog/'"
+        SecRule REQUEST_HEADERS:Host "@streq multi.example.test" "id:9507013,phase:1,pass,nolog,t:none,t:lowercase,setvar:'tx.wordpress-rule-exclusions-plugin_path=/-no-wordpress-/'"
+        SecRule REQUEST_HEADERS:Host "@streq multi.example.test" "id:9507014,phase:1,pass,nolog,t:none,t:lowercase,chain"
+            SecRule REQUEST_FILENAME "@rx ^/(?:site-a|site-b)/" "t:none,capture,setvar:'tx.wordpress-rule-exclusions-plugin_path=%{TX.0}'"

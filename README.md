@@ -20,6 +20,33 @@ in the official CRS documentation.
 
 For full and up to date instructions on how to conditionally enable/disable this plugin on a multisite environment, please refer to [Conditionally enable plugins for multi-application environments](https://coreruleset.org/docs/concepts/plugins/#conditionally-enable-plugins-for-multi-application-environments) in the official CRS documentation.
 
+### Restricting the plugin to a sub-directory
+
+If WordPress is installed in a sub-directory (for example `/blog/`) and the
+same host also serves other applications, the plugin can be limited to the
+WordPress path without writing your own chained rules. Set
+`tx.wordpress-rule-exclusions-plugin_path` to the path prefix in
+`wordpress-rule-exclusions-config.conf`:
+
+```apache
+SecAction \
+    "id:9507011,\
+    phase:1,\
+    pass,\
+    nolog,\
+    setvar:'tx.wordpress-rule-exclusions-plugin_path=/blog/'"
+```
+
+Requests whose path does not begin with the prefix are then left untouched
+by the plugin (rule 9507090 sets `tx.wordpress-rule-exclusions-plugin_enabled=0`
+for them). If the variable is not set, the plugin applies to every request,
+as before. The config file contains examples that set the prefix per host and
+that cover several WordPress installations on the same host.
+
+The prefix should start and end with `/`. It is compared with
+`REQUEST_FILENAME` using `@beginsWith`, which supports macro expansion on both
+ModSecurity v2 and libmodsecurity v3.
+
 ## Testing
 
 After the plugin is enabled, your WordPress instance should work without any

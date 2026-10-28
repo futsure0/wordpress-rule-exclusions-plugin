@@ -1,0 +1,86 @@
+---
+meta:
+  author: "Gen Tobimatsu"
+  description: "Wordpress Rule Exclusions Plugin - restrict the plugin to a path prefix"
+rule_id: 9507090
+# The integration workflow passes an extra configuration (crs-config) that sets
+# tx.wordpress-rule-exclusions-plugin_path only for the test hosts below:
+#   subdir.example.test -> /blog/
+#   multi.example.test  -> the matching prefix of ^/(?:site-a|site-b)/
+tests:
+  - test_id: 1
+    desc: Block editor save under the configured prefix is excluded
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: subdir.example.test
+            User-Agent: OWASP CRS test agent
+            Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+            Content-Type: application/json
+            x-http-method-override: PUT
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /blog/wp-json/wp/v2/posts/1
+          data: '{"id":1,"content":"<!-- wp:paragraph -->\n<p>test</p>\n<!-- /wp:paragraph -->"}'
+        output:
+          log:
+            no_expect_ids: [920450]
+  - test_id: 2
+    desc: The same request outside the configured prefix is not excluded
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: subdir.example.test
+            User-Agent: OWASP CRS test agent
+            Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+            Content-Type: application/json
+            x-http-method-override: PUT
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /shop/wp-json/wp/v2/posts/1
+          data: '{"id":1,"content":"<!-- wp:paragraph -->\n<p>test</p>\n<!-- /wp:paragraph -->"}'
+        output:
+          log:
+            expect_ids: [920450]
+  - test_id: 3
+    desc: A prefix captured from the request (second installation) is excluded
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: multi.example.test
+            User-Agent: OWASP CRS test agent
+            Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+            Content-Type: application/json
+            x-http-method-override: PUT
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /site-b/wp-json/wp/v2/posts/1
+          data: '{"id":1,"content":"<!-- wp:paragraph -->\n<p>test</p>\n<!-- /wp:paragraph -->"}'
+        output:
+          log:
+            no_expect_ids: [920450]
+  - test_id: 4
+    desc: A path on the same host that matches no prefix is not excluded
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: multi.example.test
+            User-Agent: OWASP CRS test agent
+            Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+            Content-Type: application/json
+            x-http-method-override: PUT
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /site-c/wp-json/wp/v2/posts/1
+          data: '{"id":1,"content":"<!-- wp:paragraph -->\n<p>test</p>\n<!-- /wp:paragraph -->"}'
+        output:
+          log:
+            expect_ids: [920450]
