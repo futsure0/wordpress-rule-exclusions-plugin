@@ -1,5 +1,5 @@
 # OWASP CRS - WordPress Rule Exclusions Plugin
-![Integration tests](https://github.com/coreruleset/wordpress-rule-exclusions-plugin/actions/workflows/integration.yml/badge.svg)
+[![Integration tests](https://github.com/futsure0/wordpress-rule-exclusions-plugin/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/futsure0/wordpress-rule-exclusions-plugin/actions/workflows/integration.yml?query=branch%3Amaster)
 
 ## Description
 
